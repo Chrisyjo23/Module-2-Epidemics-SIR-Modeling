@@ -15,6 +15,9 @@ lisinopril_lambda = 0.8
 
 escitalopram_lambda = 0.3
 
+# Higher lambda = more toxicity  = efficacy down.
+# Lower lambda = less toxicity  = Efficacy up.
+
 def metformin(x):   # mild toxicity, moderate efficacy
     efficacy = 0.8 * np.exp(-0.1*(x-5)**2)
     toxicity = 0.2 * x**2 / 100
@@ -61,6 +64,9 @@ def steepest_ascent(f, x0, h_step=0.1, tol=1e-6, max_iter=1000):
         x = x_new
     return x, f(x)
 
+# Steepest ascent converges slower (needs more steps)
+#Newton's method converges faster (needs fewer steps)
+
 # metformin
 opt_dose_metformin, opt_effect_metformin = steepest_ascent(metformin, x0=1.0)
 print(f"Steepest Ascent Method - Optimal Metformin Dose: {opt_dose_metformin:.2f} mg")
@@ -101,6 +107,8 @@ def newtons_method(f, x0, tol=1e-6, max_iter=1000):
             
         x = x_new
     return x, f(x)
+
+# If max_iter is smaller, the method may stop early and the optimal dose will be less accurate.
 
 # metformin
 opt_dose_metformin_nm, opt_effect_metformin_nm = newtons_method(metformin, x0=1.0)
@@ -143,6 +151,8 @@ plt.scatter(opt_comb_newton, eff_comb_newton, color='black', s=150, marker='*', 
 plt.legend()
 plt.show()  
 
+
+
 #%% Lambda tuning for Metformin
 
 target = opt_comb_newton
@@ -166,4 +176,16 @@ for lam in np.linspace(0.01, 1.5, 200):
         best_lambda = lam
 
 print("Best Metformin lambda:", best_lambda)
+
+# Questions at the end of the slideshow:
+
+## What do you notice about the initial infections?
+# -_ The numbers start small and slowly increase at first.
+
+# How could we measure how quickly it’s spreading?
+# -- We can look at how much infections increase each day.
+
+#What information about the virus would help shape the curve?
+# -- How fast it spreads (rate aka the derivtive), how long people are contagious, and how long people stay sick.
+
 
