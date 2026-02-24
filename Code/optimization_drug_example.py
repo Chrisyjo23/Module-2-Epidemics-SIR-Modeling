@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 
 #%% define drug models
 
+# Chatgpt was used in order to troubleshoot and assist in coding ----> OpenAI. (2026). ChatGPT (February 23 version) [Large language model]. https://chat.openai.com/
 # define toxicity levels for each drug (lambda)
 metformin_lambda = 0.5
 
