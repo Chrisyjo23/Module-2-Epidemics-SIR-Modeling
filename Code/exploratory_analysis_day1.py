@@ -1,7 +1,8 @@
 #%%
 import pandas as pd
 import matplotlib.pyplot as plt
-
+import numpy as np
+from scipy.stats import linregress
 #%%
 # Load the data
 data = pd.read_csv('C:\\Users\\Luke Friscia\\OneDrive\\CompBME\\Module 2\\Module-2-Epidemics-SIR-Modeling\\Data\\mystery_virus_daily_active_counts_RELEASE#1.csv', parse_dates=['date'], header=0, index_col=None)
