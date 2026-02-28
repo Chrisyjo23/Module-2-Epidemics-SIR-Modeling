@@ -177,51 +177,5 @@ for lam in np.linspace(0.01, 1.5, 200):
 
 print("Best Metformin lambda:", best_lambda)
 
-# Select early exponential growth phase (adjust range if needed)
-
-early_data = data[data['day'] < 15]   # adjust cutoff if needed
-
-t = early_data['day']
-I = early_data['active reported daily cases']
-
-# Remove zeros 
-mask = I > 0
-t = t[mask]
-I = I[mask]
-
-# Take log
-log_I = np.log(I)
-
-# Linear regression
-slope, intercept, r_value, p_value, std_err = linregress(t, log_I)
-
-r = slope
-print("Estimated growth rate r =", r)
-plt.figure()
-
-# Scatter original data
-plt.scatter(data['day'], data['active reported daily cases'], label='Data', color='blue')
-
-# Exponential fit curve
-t_fit = np.linspace(data['day'].min(), data['day'].max(), 100)
-I_fit = np.exp(intercept) * np.exp(r * t_fit)
-
-plt.plot(t_fit, I_fit)
-
-plt.xlabel("Day")
-plt.ylabel("Active Infections")
-plt.title("Exponential Fit to Early Infection Growth")
-plt.show()
-
-# Questions at the end of the slideshow:
-
-## What do you notice about the initial infections?
-# -_ The numbers start small and slowly increase at first.
-
-# How could we measure how quickly it’s spreading?
-# -- We can look at how much infections increase each day.
-
-#What information about the virus would help shape the curve?
-# -- How fast it spreads (rate aka the derivtive), how long people are contagious, and how long people stay sick.
 
 
