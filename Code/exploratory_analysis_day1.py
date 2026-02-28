@@ -40,6 +40,13 @@ r = slope
 print("Estimated growth rate r =", r)
 plt.figure()
 
+# Estimate R0 from r
+D = 9  # assumed infectious period in days
+gamma = 1 / D
+
+R0 = 1 + r / gamma
+print("Estimated R0 =", R0)
+
 # Scatter original data
 plt.scatter(data['day'], data['active reported daily cases'], label='Data', color='blue')
 
