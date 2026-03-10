@@ -8,7 +8,6 @@ import matplotlib.pyplot as plt
 
 #%% define drug models
 
-# Chatgpt was used in order to troubleshoot and assist in coding ----> OpenAI. (2026). ChatGPT (February 23 version) [Large language model]. https://chat.openai.com/
 # define toxicity levels for each drug (lambda)
 metformin_lambda = 0.5
 
@@ -178,15 +177,5 @@ for lam in np.linspace(0.01, 1.5, 200):
 
 print("Best Metformin lambda:", best_lambda)
 
-# Questions at the end of the slideshow:
-
-## What do you notice about the initial infections?
-# -_ The numbers start small and slowly increase at first.
-
-# How could we measure how quickly it’s spreading?
-# -- We can look at how much infections increase each day.
-
-#What information about the virus would help shape the curve?
-# -- How fast it spreads (rate aka the derivtive), how long people are contagious, and how long people stay sick.
 
 

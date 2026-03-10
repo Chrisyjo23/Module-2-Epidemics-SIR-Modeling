@@ -5,7 +5,11 @@ import numpy as np
 from scipy.stats import linregress
 #%%
 # Load the data
+<<<<<<< HEAD
 data = pd.read_csv('"C:\\Users\\Luke Friscia\\OneDrive\\CompBME\\Module 2\\Module-2-Epidemics-SIR-Modeling\\Data\\mystery_virus_daily_active_counts_RELEASE#1.csv"', parse_dates=['date'], header=0, index_col=None)
+=======
+data = pd.read_csv('C:\\Users\\chris_5y66qc1\\Downloads\\Academic File (Spring 2026)\\Computational BME\\Module-2-Epidemics-SIR-Modeling\\Data\\mystery_virus_daily_active_counts_RELEASE#1.csv', parse_dates=['date'], header=0, index_col=None)
+>>>>>>> 03e8ef6829e73e9725d5b3f5916ee2b7914a8c37
 print(data.columns)
 #%%
 # Make a plot of the active cases over time
@@ -40,6 +44,16 @@ r = slope
 print("Estimated growth rate r =", r)
 plt.figure()
 
+<<<<<<< HEAD
+=======
+# Estimate R0 from r
+D = 9  # assumed infectious period in days
+gamma = 1 / D
+
+R0 = 1 + r / gamma
+print("Estimated R0 =", R0)
+
+>>>>>>> 03e8ef6829e73e9725d5b3f5916ee2b7914a8c37
 # Scatter original data
 plt.scatter(data['day'], data['active reported daily cases'], label='Data', color='blue')
 
@@ -52,4 +66,8 @@ plt.plot(t_fit, I_fit)
 plt.xlabel("Day")
 plt.ylabel("Active Infections")
 plt.title("Exponential Fit to Early Infection Growth")
+<<<<<<< HEAD
 plt.show()
+=======
+plt.show()
+>>>>>>> 03e8ef6829e73e9725d5b3f5916ee2b7914a8c37
