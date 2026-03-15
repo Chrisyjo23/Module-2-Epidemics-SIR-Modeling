@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 # Load Data (Release #2)
 
-data = pd.read_csv("C:\\Users\\chris_5y66qc1\\Downloads\\Academic File (Spring 2026)\\Computational BME\\Module-2-Epidemics-SIR-Modeling\\Data\\mystery_virus_daily_active_counts_RELEASE#2.csv")
+data = pd.read_csv("C:\\Users\\Luke Friscia\\OneDrive\\CompBME\\Module 2\\Module-2-Epidemics-SIR-Modeling\\Data\\mystery_virus_daily_active_counts_RELEASE#2.csv")
 
 t_data = data["day"].values
 I_data = data["active reported daily cases"].values
@@ -105,61 +105,77 @@ print("Peak infections =", peak_cases)
 
 
 
-# True % Relative Error
+# Load new data (Release #3)
+
+data3 = pd.read_csv("C:\\Users\\Luke Friscia\\OneDrive\\CompBME\\Module 2\\Module-2-Epidemics-SIR-Modeling\\Data\\mystery_virus_daily_active_counts_RELEASE#3.csv")
+
+t_data3 = data3["day"].values
+I_data3 = data3["active reported daily cases"].values
 
 
-# Data peak values
-data_peak_cases = np.max(I_data)
-data_peak_day = t_data[np.argmax(I_data)]
+# Calculate TRUE % relative error
 
-# Model peak values (already calculated but repeated for clarity)
-model_peak_cases = np.max(I)
-model_peak_day = np.argmax(I)
+true_peak_day = t_data3[np.argmax(I_data3)]
+true_peak_cases = np.max(I_data3)
 
-# True percent relative error
+error_peak_cases = abs(true_peak_cases - peak_cases) / true_peak_cases * 100
+error_peak_day = abs(true_peak_day - peak_day) / true_peak_day * 100
 
-error_peak_cases = abs(data_peak_cases - model_peak_cases) / data_peak_cases * 100
+print("True peak day =", true_peak_day)
+print("True peak infections =", true_peak_cases)
 
-error_peak_day = abs(data_peak_day - model_peak_day) / data_peak_day * 100
-
-print("Data peak infections =", data_peak_cases)
-print("Model peak infections =", model_peak_cases)
-print("Percent error in peak infections =", error_peak_cases, "%")
-
-print()
-
-print("Data peak day =", data_peak_day)
-print("Model peak day =", model_peak_day)
-print("Percent error in peak day =", error_peak_day, "%")
+print("Percent relative error (peak cases) =", error_peak_cases, "%")
+print("Percent relative error (peak day) =", error_peak_day, "%")
 
 
+# Plot model vs true data
 
-# INTERVENTION SIMULATIONS
+plt.figure()
+
+plt.scatter(t_data3, I_data3, label="True Data (0-120)")
+plt.plot(time, I, label="SEIR Model Prediction")
+
+plt.xlabel("Day")
+plt.ylabel("Active infections")
+plt.title("Model Prediction vs True Data (120 Days)")
+plt.legend()
+
+plt.show()
 
 
-intervention_start = 70
+# VT Scenario
+
+VT_population = 40000
+
+S0 = VT_population - 1 - E0
+I0 = 1
+R0 = 0
+
+S,E,I,R = run_seir(beta, sigma, gamma)
+
+baseline_I = I.copy()
 
 
-# Mask Mandate (40% reduction in transmission)
+# 1. Masking mandate
 
-def run_mask_intervention(beta, sigma, gamma):
+def run_masking():
 
     S = np.zeros(len(time))
     E = np.zeros(len(time))
     I = np.zeros(len(time))
     R = np.zeros(len(time))
 
-    S[0], E[0], I[0], R[0] = S0, E0, I0, R0
+    S[0],E[0],I[0],R[0] = S0,E0,I0,R0
 
     for i in range(len(time)-1):
 
-        if i >= intervention_start:
-            beta_eff = beta * 0.6
+        if time[i] >= 70:
+            beta_mod = beta * 0.6
         else:
-            beta_eff = beta
+            beta_mod = beta
 
-        dS = -beta_eff * S[i] * I[i] / N
-        dE = beta_eff * S[i] * I[i] / N - sigma * E[i]
+        dS = -beta_mod * S[i] * I[i] / VT_population
+        dE = beta_mod * S[i] * I[i] / VT_population - sigma * E[i]
         dI = sigma * E[i] - gamma * I[i]
         dR = gamma * I[i]
 
@@ -168,29 +184,31 @@ def run_mask_intervention(beta, sigma, gamma):
         I[i+1] = I[i] + dI * dt
         R[i+1] = R[i] + dR * dt
 
-    return S,E,I,R
+    return I
+
+mask_I = run_masking()
 
 
-# Vaccine Campaign (2000 students vaccinated once on day 70)
+# 2. Vaccine campaign
 
-def run_vaccine_campaign(beta, sigma, gamma):
+def run_vaccine_campaign():
 
     S = np.zeros(len(time))
     E = np.zeros(len(time))
     I = np.zeros(len(time))
     R = np.zeros(len(time))
 
-    S[0], E[0], I[0], R[0] = S0, E0, I0, R0
+    S[0],E[0],I[0],R[0] = S0,E0,I0,R0
 
     for i in range(len(time)-1):
 
-        if i == intervention_start:
+        if time[i] == 70:
             vaccinated = 2000 * 0.9
             S[i] -= vaccinated
             R[i] += vaccinated
 
-        dS = -beta * S[i] * I[i] / N
-        dE = beta * S[i] * I[i] / N - sigma * E[i]
+        dS = -beta * S[i] * I[i] / VT_population
+        dE = beta * S[i] * I[i] / VT_population - sigma * E[i]
         dI = sigma * E[i] - gamma * I[i]
         dR = gamma * I[i]
 
@@ -199,31 +217,66 @@ def run_vaccine_campaign(beta, sigma, gamma):
         I[i+1] = I[i] + dI * dt
         R[i+1] = R[i] + dR * dt
 
-    return S,E,I,R
+    return I
+
+vaccine_I = run_vaccine_campaign()
 
 
-# Vaccine Rollout (1000 students vaccinated on days 70, 80, 90)
+# 3. Testing + quarantine
 
-def run_vaccine_rollout(beta, sigma, gamma):
+gamma_quarantine = 1/((1/gamma) - 2)
+
+def run_testing():
 
     S = np.zeros(len(time))
     E = np.zeros(len(time))
     I = np.zeros(len(time))
     R = np.zeros(len(time))
 
-    S[0], E[0], I[0], R[0] = S0, E0, I0, R0
-
-    rollout_days = [70,80,90]
+    S[0],E[0],I[0],R[0] = S0,E0,I0,R0
 
     for i in range(len(time)-1):
 
-        if i in rollout_days:
+        if time[i] >= 70:
+            gamma_mod = gamma_quarantine
+        else:
+            gamma_mod = gamma
+
+        dS = -beta * S[i] * I[i] / VT_population
+        dE = beta * S[i] * I[i] / VT_population - sigma * E[i]
+        dI = sigma * E[i] - gamma_mod * I[i]
+        dR = gamma_mod * I[i]
+
+        S[i+1] = S[i] + dS * dt
+        E[i+1] = E[i] + dE * dt
+        I[i+1] = I[i] + dI * dt
+        R[i+1] = R[i] + dR * dt
+
+    return I
+
+testing_I = run_testing()
+
+
+# 4. Vaccine rollout
+
+def run_vaccine_rollout():
+
+    S = np.zeros(len(time))
+    E = np.zeros(len(time))
+    I = np.zeros(len(time))
+    R = np.zeros(len(time))
+
+    S[0],E[0],I[0],R[0] = S0,E0,I0,R0
+
+    for i in range(len(time)-1):
+
+        if time[i] in [70,80,90]:
             vaccinated = 1000 * 0.9
             S[i] -= vaccinated
             R[i] += vaccinated
 
-        dS = -beta * S[i] * I[i] / N
-        dE = beta * S[i] * I[i] / N - sigma * E[i]
+        dS = -beta * S[i] * I[i] / VT_population
+        dE = beta * S[i] * I[i] / VT_population - sigma * E[i]
         dI = sigma * E[i] - gamma * I[i]
         dR = gamma * I[i]
 
@@ -232,29 +285,58 @@ def run_vaccine_rollout(beta, sigma, gamma):
         I[i+1] = I[i] + dI * dt
         R[i+1] = R[i] + dR * dt
 
-    return S,E,I,R
+    return I
+
+rollout_I = run_vaccine_rollout()
 
 
-# Run intervention models
+# 5. School closure
 
-S_mask,E_mask,I_mask,R_mask = run_mask_intervention(beta,sigma,gamma)
+def run_school_closure():
 
-S_vac,E_vac,I_vac,R_vac = run_vaccine_campaign(beta,sigma,gamma)
+    S = np.zeros(len(time))
+    E = np.zeros(len(time))
+    I = np.zeros(len(time))
+    R = np.zeros(len(time))
 
-S_roll,E_roll,I_roll,R_roll = run_vaccine_rollout(beta,sigma,gamma)
+    S[0],E[0],I[0],R[0] = S0,E0,I0,R0
 
-# Plot interventions
+    for i in range(len(time)-1):
+
+        if 70 <= time[i] < 84:
+            beta_mod = beta * 0.2
+        else:
+            beta_mod = beta
+
+        dS = -beta_mod * S[i] * I[i] / VT_population
+        dE = beta_mod * S[i] * I[i] / VT_population - sigma * E[i]
+        dI = sigma * E[i] - gamma * I[i]
+        dR = gamma * I[i]
+
+        S[i+1] = S[i] + dS * dt
+        E[i+1] = E[i] + dE * dt
+        I[i+1] = I[i] + dI * dt
+        R[i+1] = R[i] + dR * dt
+
+    return I
+
+closure_I = run_school_closure()
+
+
+# Plot all interventions
 
 plt.figure()
 
-plt.plot(time, I, label="Baseline")
-plt.plot(time, I_mask, label="Mask Mandate")
-plt.plot(time, I_vac, label="Vaccine Campaign")
-plt.plot(time, I_roll, label="Vaccine Rollout")
+plt.plot(time, baseline_I, label="Baseline")
+plt.plot(time, mask_I, label="Masking")
+plt.plot(time, vaccine_I, label="Vaccine Campaign")
+plt.plot(time, rollout_I, label="Vaccine Rollout")
+plt.plot(time, testing_I, label="Testing + Quarantine")
+plt.plot(time, closure_I, label="School Closure")
 
 plt.xlabel("Day")
 plt.ylabel("Active infections")
-plt.title("Intervention Comparison")
+plt.title("Intervention Comparison (VT Scenario)")
 plt.legend()
 
 plt.show()
